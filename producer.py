@@ -6,36 +6,33 @@ from confluent_kafka import Producer
 if __name__ == '__main__':
 
     config = {
-        # User-specific properties that you must set
         'bootstrap.servers': 'localhost:9092'
         
     }
 
-    # Create Producer instance
+    
     producer = Producer(config)
+    
+    def mensagem():
+        msg = input("Digite a mensagem que deseja produzir para o consumer -> ")
+        return msg
 
-    # Optional per-message delivery callback (triggered by poll() or flush())
-    # when a message has been successfully delivered or permanently
-    # failed delivery (after retries).
+    # Função retirada do doc "confluent-kafka"
+    # o callback serve como uma confirmação de envio ou fala no envio da mensagem
     def delivery_callback(err, msg):
         if err:
-            print('ERROR: Message failed delivery: {}'.format(err))
+            print('ERRO: Falha no envio da mensagem: {}'.format(err))
         else:
-            print("Produced event to topic {topic}: key = {key:12} value = {value:12}".format(
-                topic=msg.topic(), key=msg.key().decode('utf-8'), value=msg.value().decode('utf-8')))
+            print("Mensagem produzida para o topico {topic}: value = {value:12}".format(
+                topic=msg.topic(), value=msg.value().decode('utf-8')))
 
-    # Produce data by selecting random values from these lists.
-    topic = "purchases"
-    user_ids = ['eabara', 'jsmith', 'sgarcia', 'jbernard', 'htanaka', 'awalther']
-    products = ['book', 'alarm clock', 't-shirts', 'gift card', 'batteries']
+    topic = "mensagem"
 
     count = 0
     for _ in range(10):
-        user_id = choice(user_ids)
-        product = choice(products)
-        producer.produce(topic, product, user_id, callback=delivery_callback)
+        producer.produce(topic, mensagem(), callback=delivery_callback)
         count += 1
 
-    # Block until the messages are sent.
-    producer.poll(10000)
-    producer.flush()
+    
+    producer.poll(10000) # Verifica e aciona o callback de cada mensagem
+    producer.flush() # Aguarda a entrega de todas as mensagens na fila

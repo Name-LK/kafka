@@ -1,43 +1,34 @@
 from confluent_kafka import Consumer
 import sys
 
-#conf = {'bootstrap.servers': 'localhost:9092',
- #       'group.id': 'foo',
-  #      'auto.offset.reset': 'smallest'}
-
-
 if __name__ == '__main__':
 
-    config = {
-        # User-specific properties that you must set
-        'bootstrap.servers': 'localhost:9092',
-        'group.id' : 'eabara'
+    config = { # Define oa parâmetros de config necessários
+        
+        'bootstrap.servers': 'localhost:9092', # Endereço onde o kafka está hospedado
+        'group.id' : 'eabara' # Config do consumer que identifica a que grupo ele pertence
     }
 
-    # Create Consumer instance
-    consumer = Consumer(config)
 
-    # Subscribe to topic
-    topic = "purchases"
+    consumer = Consumer(config) # Instãncia
+
+    # Se inscerve ao topico = topic
+    topic = "mensagem"
     consumer.subscribe([topic])
 
-    # Poll for new messages from Kafka and print them.
+    # Pesquisa pelas mensagens
     try:
         while True:
-            msg = consumer.poll(1.0)
+            msg = consumer.poll(1.0) # consumet.poll(timeout); consome uma mensagem, chama o callback e retorna um evento
             if msg is None:
-                # Initial message consumption may take up to
-                # `session.timeout.ms` for the consumer group to
-                # rebalance and start consuming
-                print("Waiting...")
+                print("Aguardando Mensagem...")
             elif msg.error():
-                print("ERROR: %s".format(msg.error()))
+                print("ERRO: %s".format(msg.error()))
             else:
-                # Extract the (optional) key and value, and print.
-                print("Consumed event from topic {topic}: key = {key:12} value = {value:12}".format(
-                    topic=msg.topic(), key=msg.key().decode('utf-8'), value=msg.value().decode('utf-8')))
+                # Printa a mensagem e a chave
+                print("Mensagem recebida do tópico {topic}: Valor = {value:12}".format(
+                    topic=msg.topic(), value=msg.value().decode('utf-8')))
     except KeyboardInterrupt:
         pass
     finally:
-        # Leave group and commit final offsets
-        consumer.close()
+        consumer.close() # Fecha o consumer desinscrevendo dos tópicos
